@@ -18,7 +18,8 @@ type MenuItem = {
   images?: string[];
 };
 
-export default function MenuPage() {
+  export default function MenuContent() {
+
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { addToCart, items: cartItems } = useCart();
