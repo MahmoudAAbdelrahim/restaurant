@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react"; // 1. استيراد Suspense
 import { useCart } from "../../store/cart";
 import { useSearchParams, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ShoppingCart, Zap, Plus, ArrowRight, Utensils, Coffee } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -18,15 +18,14 @@ type MenuItem = {
   images?: string[];
 };
 
-  export default function MenuContent() {
-
+// 2. فصل المحتوى في مكون منفصل
+function MenuContent() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { addToCart, items: cartItems } = useCart();
-  const params = useSearchParams();
+  const params = useSearchParams(); // هذه هي الدالة المسببة للمشكلة
   const router = useRouter();
   
-  // الحصول على رقم الطاولة من الرابط أو التخزين المحلي
   const tableFromUrl = params.get("table");
   const [tableNumber, setTableNumber] = useState<string>("");
 
@@ -48,7 +47,6 @@ type MenuItem = {
 
   const isInCart = (id: string) => cartItems.some((cartItem) => cartItem.id === id);
 
-  // دالة الطلب المباشر من داخل المطعم
   const handleDirectOrder = async (item: MenuItem) => {
     if (!tableNumber) {
       Swal.fire({
@@ -117,16 +115,13 @@ type MenuItem = {
     }
   };
 
-  // تقسيم المنتجات حسب التصنيف
   const categories = Array.from(new Set(items.map((i) => i.category)));
 
-  if (loading) return <div className="text-center py-20 font-bold">جاري تحميل القائمة...</div>;
+  if (loading) return <div className="text-center py-20 font-bold text-orange-600">جاري تحميل القائمة...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 py-16 px-4 font-sans mt-15">
       <div className="max-w-7xl mx-auto">
-        
-        {/* Header */}
         <div className="mb-12 text-center md:text-right">
           <span className="text-orange-600 font-bold tracking-widest text-sm bg-orange-50 px-4 py-2 rounded-full">منيو المطعم</span>
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 mt-4">
@@ -134,7 +129,6 @@ type MenuItem = {
           </h1>
         </div>
 
-        {/* Categories Sections */}
         {categories.map((cat) => (
           <div key={cat} className="mb-16">
             <div className="flex items-center gap-3 mb-8 border-r-4 border-orange-500 pr-4">
@@ -155,7 +149,6 @@ type MenuItem = {
                     layout
                     className="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group"
                   >
-                    {/* Image */}
                     <div 
                       className="relative h-56 cursor-pointer overflow-hidden"
                       onClick={() => router.push(`/menu/${item.id}`)}
@@ -172,7 +165,6 @@ type MenuItem = {
                       )}
                     </div>
 
-                    {/* Info */}
                     <div className="p-5">
                       <h3 
                         className="text-lg font-bold text-gray-800 mb-1 cursor-pointer hover:text-orange-600 transition-colors"
@@ -190,7 +182,6 @@ type MenuItem = {
                       </div>
 
                       <div className="flex gap-2">
-                        {/* أضف للسلة */}
                         <button
                           onClick={() => addToCart({
                             id: item.id,
@@ -208,7 +199,6 @@ type MenuItem = {
                           {isInCart(item.id) ? <ArrowRight size={20} onClick={() => router.push('/cart')} /> : <Plus size={20} />}
                         </button>
 
-                        {/* اطلب الآن */}
                         <button
                           onClick={() => handleDirectOrder(item)}
                           className="flex-1 bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
@@ -225,5 +215,14 @@ type MenuItem = {
         ))}
       </div>
     </div>
+  );
+}
+
+// 3. التصدير الأساسي مع تغليف المحتوى بـ Suspense
+export default function MenuPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20 font-bold">جاري تحميل القائمة...</div>}>
+      <MenuContent />
+    </Suspense>
   );
 }
