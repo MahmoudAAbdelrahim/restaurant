@@ -4,8 +4,8 @@ import { jwtVerify } from "jose";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
-export async function middleware(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+export async function proxy(req: NextRequest) {
+    const token = req.cookies.get("token")?.value;
 
   const isAdminPage = req.nextUrl.pathname.startsWith("/admin");
   const isApi = req.nextUrl.pathname.startsWith("/api");
