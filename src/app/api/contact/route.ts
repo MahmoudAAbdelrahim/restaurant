@@ -22,3 +22,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: "حدث خطأ في الإرسال" }, { status: 500 });
   }
 }
+
+export async function GET() {
+    try {
+        await connectDB();
+        const messages = await Contact.find({}).sort({ createdAt: -1 });
+        return NextResponse.json(messages);
+    } catch (err) {
+        return NextResponse.json({ error: "فشل جلب الرسائل" }, { status: 500 });
+    }
+}
+
+export async function DELETE(req: Request) {
+    try {
+        await connectDB();
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get("id");
+
+        await Contact.findByIdAndDelete(id);
+        return NextResponse.json({ success: true, message: "تم حذف الرسالة" });
+    } catch (err) {
+        return NextResponse.json({ error: "فشل الحذف" }, { status: 500 });
+    }
+}
