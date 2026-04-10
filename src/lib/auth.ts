@@ -1,9 +1,10 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 
-export function requireAuth() {
-const cookieStore = cookies();
-const token = cookieStore.get("token")?.value;
+export async function requireAuth() {
+  const cookieStore = await cookies(); // 👈 لازم await
+  const token = cookieStore.get("token")?.value;
+
   if (!token) {
     throw new Error("Unauthorized");
   }
@@ -15,8 +16,8 @@ const token = cookieStore.get("token")?.value;
   }
 }
 
-export function requireAdmin() {
-  const user = requireAuth();
+export async function requireAdmin() {
+  const user = await requireAuth(); // 👈 لازم await
 
   if ((user as any).role !== "admin") {
     throw new Error("Forbidden");
